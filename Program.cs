@@ -72,9 +72,8 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-
-
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<IProductRepo, ProductRepo>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
