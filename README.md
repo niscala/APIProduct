@@ -11,4 +11,4 @@
      * DEL :  http://localhost:5118/api/Product/{id} (isikan id)
      * PUT :  http://localhost:5118/api/Product/{id} (isikan id)
 3. Sebelum get product atau tambah product isikan terlebih dahulu token yg didapat saat login di bagian Authorization dengan Bearer Token
-4. Terdapat UI dari API ini
+4. Terdapat UI dari API ini GIT : https://github.com/niscala/APIProductUI.git
