@@ -1,6 +1,9 @@
-﻿namespace APIProduct.Models
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace APIProduct.Models
 {
-    public class UserApplication
+    public class UserApplication : IdentityUser
     {
+        //Nothing
     }
 }
