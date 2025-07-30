@@ -72,6 +72,16 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// kebijakan CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy => policy.WithOrigins(builder.Configuration["Client:Host"])
+                        .AllowAnyHeader()
+                        .AllowAnyMethod());
+});
+
+
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 
@@ -88,6 +98,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Product API V1"); });
 }
+
+app.UseCors("AllowFrontend");
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
