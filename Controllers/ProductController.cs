@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using APIProduct.DTOs;
+﻿using APIProduct.DTOs;
 using APIProduct.Models;
 using APIProduct.Repo;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace APIProduct.Controllers
 {
@@ -13,16 +14,25 @@ namespace APIProduct.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductRepo _repo;
+        private readonly IMemoryCache _cache;
 
-        public ProductController(IProductRepo repo)
+        const string cacheKey = "product_list";
+
+        public ProductController(IProductRepo repo, IMemoryCache cache)
         {
             _repo = repo;
+            _cache = cache;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Product>>> GetAll([FromQuery] string? name, [FromQuery] decimal? minPrice, [FromQuery] decimal? maxPrice)
         {
+            if (_cache.TryGetValue(cacheKey, out List<Product> cachedProducts)) return Ok(cachedProducts);
+            
             var products = await _repo.GetFilteredProducts(name, minPrice, maxPrice);
+
+            SetCache(products);
+
             return Ok(products);
         }
 
@@ -44,6 +54,9 @@ namespace APIProduct.Controllers
                 Price = dto.Price
             };
             await _repo.Create(product);
+
+            ClearCache();
+
             return CreatedAtAction(nameof(Get), new { id = product.Id }, product);
         }
 
@@ -58,6 +71,8 @@ namespace APIProduct.Controllers
             existing.Price = dto.Price;
             await _repo.Update(existing);
 
+            ClearCache();
+
             return NoContent();
         }
 
@@ -68,9 +83,20 @@ namespace APIProduct.Controllers
             if (product == null) return NotFound();
 
             await _repo.Delete(product);
+
+            ClearCache();
+
             return NoContent();
         }
 
+        private void ClearCache()
+        {
+            _cache.Remove(cacheKey);
+        }
 
+        private void SetCache(object products)
+        {
+            _cache.Set(cacheKey, products, new MemoryCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
+        }
     }
 }
